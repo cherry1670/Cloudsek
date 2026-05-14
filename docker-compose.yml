@@ -1,0 +1,46 @@
+services:
+  api:
+    build: .
+    container_name: scrapper-server-api
+    depends_on:
+      - mongo
+      - redis
+    environment:
+      APP_NAME: scrapper-server
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8000
+      LOG_LEVEL: info
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DATABASE: metadata_service
+      MONGODB_COLLECTION: url_metadata
+      REDIS_URL: redis://redis:6379/0
+      CACHE_TTL_SECONDS: 86400
+      MAX_CONCURRENT_WORKERS: 10
+      REQUEST_TIMEOUT_SECONDS: 20
+      MAX_RETRIES: 3
+      USER_AGENT: scrapper-server/1.0
+      MAX_PAGE_SOURCE_CHARS: 500000
+    ports:
+      - "8000:8000"
+
+  mongo:
+    image: mongo:7
+    container_name: scrapper-server-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    container_name: scrapper-server-redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+
+volumes:
+  mongo-data:
+  redis-data:
+
